@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 
+
 class _Settings(BaseSettings):
     XBL_API_KEY: str
     ASCII_BANNER: str = """
@@ -11,5 +12,6 @@ class _Settings(BaseSettings):
 
  Telegram: @c0daxy | Discord: @codaxy
 """
+
 
 Settings = _Settings(_env_file=".env")

@@ -6,7 +6,8 @@ from typing import List
 from logger import Logging
 from config import Settings
 
-class XBLScrapper():
+
+class XBLScrapper:
 
     def __init__(self) -> None:
         self.logger = Logging()
@@ -14,11 +15,13 @@ class XBLScrapper():
         self.api_base_url = "https://xbl.io/api/v2"
 
     @staticmethod
-    def save_gamertags_to_file(gamertags: List[str], file_path: str = "output/gamertags.txt") -> None:
+    def save_gamertags_to_file(
+        gamertags: List[str], file_path: str = "output/gamertags.txt"
+    ) -> None:
         with open(file_path, "a") as f:
             f.write("\n".join(gamertags) + "\n")
 
-    def get_user_friends(self, gamertag: str) -> (List[str] | None):
+    def get_user_friends(self, gamertag: str) -> List[str] | None:
         xuid = self.__convert_gamertag_to_xuid(gamertag)
 
         if not xuid:
@@ -27,12 +30,12 @@ class XBLScrapper():
         url = self.api_base_url + f"/friends/{xuid}"
         headers = {
             "X-Authorization": self.xbl_api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         try:
             response = requests.get(url=url, headers=headers)
-            response.raise_for_status() 
+            response.raise_for_status()
             data = response.json()
             return self.__get_friends_gamertag(data)
 
@@ -47,7 +50,7 @@ class XBLScrapper():
         url = self.api_base_url + f"/search/{gamertag}"
         headers = {
             "X-Authorization": self.xbl_api_key,
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
         try:
@@ -55,11 +58,11 @@ class XBLScrapper():
             response.raise_for_status()
             data = response.json()
             return str(data["people"][0]["xuid"])
-        
+
         except (requests.exceptions.RequestException, IndexError, KeyError) as e:
             self.logger.error(f"Error retrieving XUID for {gamertag}: {e}")
             return
-    
+
     def run_program(self) -> None:
 
         if os.name == "nt":
@@ -86,7 +89,9 @@ class XBLScrapper():
             friends = self.get_user_friends(current_gamertag)
 
             if friends is None:
-                self.logger.warning(f"Failed to retrieve friends for {current_gamertag}. Retrying...")
+                self.logger.warning(
+                    f"Failed to retrieve friends for {current_gamertag}. Retrying..."
+                )
                 continue
 
             processed_gamertags.add(current_gamertag)
@@ -98,6 +103,7 @@ class XBLScrapper():
             XBLScrapper.save_gamertags_to_file(friends)
             queue.extend(friends)
             time.sleep(10)
+
 
 if __name__ == "__main__":
     XBLScrapper().run_program()
